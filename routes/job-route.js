@@ -7,7 +7,8 @@ const {
     getJobs,
     getJobById,
     updateJobById,
-    deleteJobById
+    deleteJobById,
+    searchJobs
 } = require('../controllers/job-controller.js');
 
 
@@ -16,6 +17,8 @@ router.post('/', saveJob);
 
 // Get all jobs
 router.get('/', getJobs);
+
+router.get('/search', searchJobs);
 
 // Get job by ID
 router.get('/:id', getJobById);

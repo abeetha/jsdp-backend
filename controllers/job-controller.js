@@ -149,10 +149,220 @@ const deleteJobById = async (req, res) => {
         });
     }
 };
+
+const searchJobs = async (req, res) => {
+
+    try {
+
+        const {
+            title,
+            location,
+            skills,
+            employment_type,
+            min_salary,
+            max_salary,
+            page = 1,
+            limit = 10
+        } = req.query;
+
+
+        // Convert pagination values to numbers
+        const pageNumber = Math.max(parseInt(page) || 1, 1);
+
+        const limitNumber = Math.min(
+            Math.max(parseInt(limit) || 10, 1),
+            100
+        );
+
+        const offset = (pageNumber - 1) * limitNumber;
+
+
+        let whereConditions = [];
+
+        let queryParams = [];
+
+
+        // TITLE FILTER
+        if (title) {
+
+            whereConditions.push(
+                'title LIKE ?'
+            );
+
+            queryParams.push(
+                `%${title}%`
+            );
+
+        }
+
+
+        // LOCATION FILTER
+        if (location) {
+
+            whereConditions.push(
+                'location LIKE ?'
+            );
+
+            queryParams.push(
+                `%${location}%`
+            );
+
+        }
+
+
+        // SKILLS FILTER
+        if (skills) {
+
+            whereConditions.push(
+                'required_skills LIKE ?'
+            );
+
+            queryParams.push(
+                `%${skills}%`
+            );
+
+        }
+
+
+        // EMPLOYMENT TYPE FILTER
+        if (employment_type) {
+
+            whereConditions.push(
+                'employment_type = ?'
+            );
+
+            queryParams.push(
+                employment_type
+            );
+
+        }
+
+
+        // MINIMUM SALARY
+        if (min_salary) {
+
+            whereConditions.push(
+                'CAST(salary AS DECIMAL(15,2)) >= ?'
+            );
+
+            queryParams.push(
+                parseFloat(min_salary)
+            );
+
+        }
+
+
+        // MAXIMUM SALARY
+        if (max_salary) {
+
+            whereConditions.push(
+                'CAST(salary AS DECIMAL(15,2)) <= ?'
+            );
+
+            queryParams.push(
+                parseFloat(max_salary)
+            );
+
+        }
+
+
+        let whereClause = '';
+
+        if (whereConditions.length > 0) {
+
+            whereClause =
+                'WHERE ' + whereConditions.join(' AND ');
+
+        }
+
+
+        // GET TOTAL COUNT
+        const countQuery = `
+            SELECT COUNT(*) AS total
+            FROM jobs
+            ${whereClause}
+        `;
+
+
+        const [countRows] = await pool.query(
+            countQuery,
+            queryParams
+        );
+
+
+        const totalJobs = countRows[0].total;
+
+
+        // GET JOBS
+        const jobsQuery = `
+            SELECT *
+            FROM jobs
+            ${whereClause}
+            ORDER BY id DESC
+            LIMIT ? OFFSET ?
+        `;
+
+
+        const [jobs] = await pool.query(
+            jobsQuery,
+            [
+                ...queryParams,
+                limitNumber,
+                offset
+            ]
+        );
+
+
+        const totalPages = Math.ceil(
+            totalJobs / limitNumber
+        );
+
+
+        res.status(200).json({
+
+            success: true,
+
+            pagination: {
+                currentPage: pageNumber,
+                limit: limitNumber,
+                totalJobs: totalJobs,
+                totalPages: totalPages
+            },
+
+            filters: {
+                title: title || null,
+                location: location || null,
+                skills: skills || null,
+                employment_type: employment_type || null,
+                min_salary: min_salary || null,
+                max_salary: max_salary || null
+            },
+
+            data: jobs
+
+        });
+
+
+    } catch (err) {
+
+        console.error(
+            'Error searching jobs:',
+            err
+        );
+
+        res.status(500).json({
+            error: 'Error searching jobs'
+        });
+
+    }
+
+};
+
 module.exports = {
     saveJob,
     getJobs,
     getJobById,
     updateJobById,
-    deleteJobById
+    deleteJobById,
+    searchJobs
 };

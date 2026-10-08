@@ -6,24 +6,28 @@ const {
     saveApplication,
     getApplications,
     getApplicationById,
-    updateApplicationById,
+    getUserApplications,
     deleteApplicationById
 } = require('../controllers/application-controller.js');
 
 
-// Create application
+// Apply for a job
 router.post('/', saveApplication);
+
 
 // Get all applications
 router.get('/', getApplications);
 
-// Get application by ID
+
+// Get applications of one job seeker
+router.get('/user/:userId', getUserApplications);
+
+
+// Get one application
 router.get('/:id', getApplicationById);
 
-// Update application
-router.put('/:id', updateApplicationById);
 
-// Delete application
+// Withdraw application
 router.delete('/:id', deleteApplicationById);
 
 

@@ -17,6 +17,7 @@ const courseRoute = require('./routes/course-route.js');
 const jobSeekerRoute = require('./routes/job-seeker-route.js');
 const employerJobRoute = require('./routes/employer-job-route.js');
 const employerApplicantRoute = require('./routes/employer-applicant-route.js');
+const authRoute = require('./routes/auth-route.js');
 
 app.use('/api/v1/admin', adminRoute);
 app.use('/api/v1/jobs', jobRoute);
@@ -25,6 +26,8 @@ app.use('/api/v1/courses', courseRoute);
 app.use('/api/v1/job-seekers', jobSeekerRoute);
 app.use('/api/v1/employer-jobs', employerJobRoute);
 app.use('/api/v1/employer-applicants',employerApplicantRoute);
+app.use('/api/v1/auth', authRoute);
+
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });
